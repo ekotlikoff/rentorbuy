@@ -10,9 +10,10 @@ type InputData struct {
 }
 
 type Assumptions struct {
-	MarketGrowthYearly       float64
-	RealEstateGrowthYearly   float64
-	IncomeTaxStateAndFederal float64
+	MarketGrowthYearly               float64
+	RealEstateGrowthYearly           float64
+	IncomeTaxStateAndFederal         float64
+	DownPaymentInvestedPropIfRenting float64
 }
 
 type Scenario struct {
@@ -29,7 +30,6 @@ type House struct {
 	LoanTermYears         float64
 	MaintenanceMonthly    float64
 	ClosingCostBuy        float64
-	ClosingCostSell       float64
 }
 
 func (s *Scenario) downPayment() float64 {
@@ -40,11 +40,12 @@ func (s *Scenario) loanPrincipal() float64 {
 	return s.House.Cost - s.downPayment()
 }
 
-const defaultScenario = Scenario{
+var defaultScenario = Scenario{
 	Assumptions: Assumptions{
-		MarketGrowthYearly:       1.06,
-		RealEstateGrowthYearly:   1.028,
-		IncomeTaxStateAndFederal: 0.3465,
+		MarketGrowthYearly:               1.06,
+		RealEstateGrowthYearly:           1.028,
+		IncomeTaxStateAndFederal:         0.3465,
+		DownPaymentInvestedPropIfRenting: 0.7,
 	},
 	House: House{
 		DownPaymentProportion: 0.20,
@@ -59,7 +60,7 @@ func LoadScenario(d []byte) *Scenario {
 	var s Scenario = defaultScenario
 	err := json.Unmarshal(d, &s)
 	if err != nil {
-		log.Fatalf(err)
+		log.Fatalf(err.Error())
 	}
-	return i
+	return &s
 }
