@@ -1,12 +1,13 @@
 package data
 
 import (
-	"fmt"
+	"log"
 	"math"
 )
 
 const (
-	closingCostSellProp float64 = 0.078
+	closingCostSellProp = 0.078
+	monthsToCalc        = 35 * 12
 )
 
 func (s *Scenario) monthlyMoneyMadeRenting(months float64) []float64 {
@@ -17,7 +18,7 @@ func (s *Scenario) monthlyMoneyMadeRenting(months float64) []float64 {
 	for m := 0.0; m < months; m++ {
 		value *= monthlyCompoundingRate
 		out = append(out, value-totalInvested-s.Rent*m)
-		fmt.Printf("months: %d, equity gain: %.0f, rent paid: %.0f\n", int(m), value-totalInvested, s.Rent*m)
+		log.Printf("months: %d, equity gain: %.0f, rent paid: %.0f\n", int(m), value-totalInvested, s.Rent*m)
 	}
 	return out
 }
@@ -31,9 +32,19 @@ func (s *Scenario) monthlyMoneyMadeBuying(months float64) []float64 {
 		maintenanceCost := s.House.MaintenanceMonthly * float64(m)
 		out = append(out,
 			equityGain[m]-maintenanceCost-interestPaid[m]-s.House.ClosingCostBuy-sellClosingCosts[m])
-		fmt.Printf("months: %d, equity gain: %.0f, interest paid: %.0f, maintenance cost: %.0f, buyingClosingCosts: %.0f, sellingClosingCosts: %.0f\n", m, equityGain[m], interestPaid[m], maintenanceCost, s.House.ClosingCostBuy, sellClosingCosts[m])
+		log.Printf("months: %d, equity gain: %.0f, interest paid: %.0f, maintenance cost: %.0f, buyingClosingCosts: %.0f, sellingClosingCosts: %.0f\n", m, equityGain[m], interestPaid[m], maintenanceCost, s.House.ClosingCostBuy, sellClosingCosts[m])
 	}
 	return out
+}
+
+func (s *Scenario) run() []float64 {
+	items := make([]float64, 0, monthsToCalc)
+	buying := s.monthlyMoneyMadeBuying(float64(monthsToCalc))
+	renting := s.monthlyMoneyMadeRenting(float64(monthsToCalc))
+	for m := 0; m < monthsToCalc; m++ {
+		items = append(items, buying[m]-renting[m])
+	}
+	return items
 }
 
 func (s *Scenario) equityGain(months float64) []float64 {
@@ -51,7 +62,7 @@ func (s *Scenario) equityGain(months float64) []float64 {
 			equity += (monthlyPayment - interestPayment)
 		}
 		principal = math.Max(0, principal-(monthlyPayment-interestPayment))
-		fmt.Printf("RE equity gain = equity %f - downpayment %f - principal paid %f\n", equity, s.downPayment(), s.loanPrincipal()-principal)
+		log.Printf("RE equity gain = equity %f - downpayment %f - principal paid %f\n", equity, s.downPayment(), s.loanPrincipal()-principal)
 		out = append(out, equity-s.downPayment()-(s.loanPrincipal()-principal))
 	}
 	return out

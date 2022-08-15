@@ -48,6 +48,8 @@ var defaultScenario = Scenario{
 		DownPaymentInvestedPropIfRenting: 0.7,
 	},
 	House: House{
+		Cost:                  500000,
+		MaintenanceMonthly:    1100,
 		DownPaymentProportion: 0.20,
 		InterestRate:          0.0325,
 		LoanTermYears:         30.0,

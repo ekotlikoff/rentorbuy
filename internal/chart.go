@@ -11,9 +11,7 @@ import (
 	"github.com/go-echarts/go-echarts/v2/types"
 )
 
-var monthsToCalc = 35 * 12
-
-func (s *Scenario) Visualize() {
+func (s *Scenario) GenerateChart() *os.File {
 	line := charts.NewLine()
 	tooltipFormatter := opts.FuncOpts(`function (params) {
 		return Math.floor(params.value[1]).toLocaleString('en-US', { style: 'currency', currency: 'USD' })+' gain after '+Math.floor(params.value[0]/12)+' years';
@@ -32,10 +30,14 @@ func (s *Scenario) Visualize() {
 	line.AddSeries(
 		s.House.Address, s.generateLineItems(),
 	)
-	f, _ := os.Create("data/index.html")
+	f, err := os.CreateTemp("", "rentorybuy-*.html")
+	if err != nil {
+		log.Fatalf("Failed to create temp file")
+	}
+
 	// Can we add custom html here with the scenario data?
 	line.Render(f)
-	s.writeToCSV()
+	return f
 }
 
 func (s *Scenario) generateLineItems() []opts.LineData {
